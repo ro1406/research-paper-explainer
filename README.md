@@ -1,8 +1,8 @@
-# Research Explainer Agent
+# Research Paper Explainer Agent
 
 A specialized ADK based AI agent that analyzes research papers and provides detailed explanations with visual aids. Upload a PDF research paper, ask questions about specific concepts, and receive comprehensive explanations accompanied by flowcharts and diagrams. Made with Google's Agent Development Kit (ADK)
 
-**My motivation to make this:** I often need to read several research papers and learn new advanced concepts in machine learning directly from highly technical papers to keep up with the literature and implement these new concepts at work and in my research. This tool will help me focus on the important parts of the paper and give me illustrations and diagrams to help me learn and visualize things faster. The agent is designed to use multiple diagrams to explain the concept giving me more details than the one or two diagrams that are normally included in research papers.
+**My motivation to make this:** I often need to read several research papers and learn new advanced concepts in machine learning directly from highly technical papers to keep up with the literature and implement these new concepts at work and in my research. This tool will help me focus on the important parts of the paper and give me illustrations and diagrams to help me learn and visualize things faster. The agent is designed to use multiple diagrams to explain the concept, giving me more details than the one or two diagrams that are normally included in research papers.
 
 ## Features
 
