@@ -4,4 +4,5 @@ python-dotenv
 requests
 fastapi[standard]
 pydantic
+python-multipart
 uvicorn
