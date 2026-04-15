@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Research Paper Explainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { darkMode: "class" };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  </head>
+  <body class="min-h-screen bg-stone-100 text-stone-900 antialiased transition-colors dark:bg-stone-950 dark:text-stone-100">
+    <div class="mx-auto flex min-h-screen max-w-4xl flex-col px-4 py-6">
+      <header class="mb-4 flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div class="text-center sm:text-left">
+          <h1 class="font-serif text-2xl font-semibold tracking-tight text-stone-800 dark:text-stone-100 md:text-3xl">
+            AI Research Paper Explainer
+          </h1>
+          <p class="mt-1 text-sm text-stone-600 dark:text-stone-400">
+            Chat with the agent—optionally upload a PDF once per chat, then ask follow-ups.
+          </p>
+        </div>
+        <div class="flex flex-shrink-0 items-center justify-center gap-2 self-center sm:self-auto">
+          <button
+            type="button"
+            id="theme-toggle"
+            class="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700 shadow-sm hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
+            aria-pressed="false"
+            title="Toggle dark mode"
+          >
+            <span id="theme-toggle-label">Dark mode</span>
+          </button>
+          <button
+            type="button"
+            id="new-chat-btn"
+            class="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700 shadow-sm hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
+          >
+            New chat
+          </button>
+        </div>
+      </header>
+
+      <div
+        class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm dark:border-stone-700 dark:bg-stone-900"
+      >
+        <div
+          id="chat-messages"
+          class="flex-1 space-y-4 overflow-y-auto p-4"
+          aria-live="polite"
+        >
+          <div id="chat-empty" class="py-8 text-center text-sm text-stone-500 dark:text-stone-400">
+            Upload a PDF (optional) and send your first message below. Press <kbd class="rounded bg-stone-200 px-1 dark:bg-stone-700">Enter</kbd> to send, <kbd class="rounded bg-stone-200 px-1 dark:bg-stone-700">Shift+Enter</kbd> for a new line.
+          </div>
+        </div>
+
+        <div
+          id="typing-indicator"
+          class="hidden border-t border-stone-100 bg-stone-50 px-4 py-2 text-sm text-stone-500 dark:border-stone-800 dark:bg-stone-900/90 dark:text-stone-400"
+        >
+          <span class="inline-flex items-center gap-2">
+            <span class="h-2 w-2 animate-pulse rounded-full bg-indigo-400"></span>
+            Thinking…
+          </span>
+        </div>
+
+        <form id="chat-form" class="border-t border-stone-200 bg-stone-50 p-3 dark:border-stone-700 dark:bg-stone-900/60" novalidate>
+          <div id="pdf-row" class="mb-3 rounded-lg border border-dashed border-stone-300 bg-white p-3 dark:border-stone-600 dark:bg-stone-800">
+            <label for="pdf-input" class="block text-xs font-medium text-stone-600 dark:text-stone-300"
+              >Paper PDF (first message only)</label
+            >
+            <div class="mt-1 flex flex-wrap items-center gap-2">
+              <input
+                type="file"
+                id="pdf-input"
+                accept=".pdf,application/pdf"
+                class="max-w-full text-sm text-stone-700 file:mr-2 file:rounded file:border-0 file:bg-indigo-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-indigo-700 hover:file:bg-indigo-100 dark:text-stone-200 dark:file:bg-indigo-950 dark:file:text-indigo-300 dark:hover:file:bg-indigo-900"
+              />
+              <span id="pdf-status" class="text-xs text-stone-500 dark:text-stone-400"></span>
+            </div>
+            <p id="pdf-help" class="mt-1 text-xs text-stone-500 dark:text-stone-400">
+              You can attach one PDF per conversation. After the first reply, this is locked for this chat.
+            </p>
+          </div>
+
+          <label for="chat-input" class="sr-only">Message</label>
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-end">
+            <textarea
+              id="chat-input"
+              rows="3"
+              class="min-h-24 flex-1 resize-y rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-800 shadow-inner placeholder:text-stone-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:placeholder:text-stone-500"
+              placeholder="Paste abstract, a paragraph, or your follow-up question…"
+            ></textarea>
+            <button
+              type="submit"
+              id="send-btn"
+              class="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-stone-50 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-offset-stone-900"
+            >
+              <span id="send-label">Send</span>
+              <span
+                id="send-spinner"
+                class="hidden h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+                aria-hidden="true"
+              ></span>
+            </button>
+          </div>
+          <p id="validation-msg" class="mt-2 hidden text-sm text-red-600 dark:text-red-400" role="alert"></p>
+        </form>
+      </div>
+    </div>
+
+    <!-- Lightbox for enlarged diagrams -->
+    <div
+      id="lightbox"
+      class="fixed inset-0 z-[100] hidden cursor-zoom-out items-center justify-center bg-black/85 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Enlarged image"
+    >
+      <button
+        type="button"
+        id="lightbox-close"
+        class="absolute right-4 top-4 rounded-full bg-white/10 px-3 py-1 text-sm text-white hover:bg-white/20"
+      >
+        Close
+      </button>
+      <img id="lightbox-img" src="" alt="" class="max-h-[92vh] max-w-full rounded object-contain shadow-2xl" />
+    </div>
+
+    <script>
+      const BACKEND_URL = "http://localhost:8000/api/explain"; // TODO: Replace with Cloud Run URL — paste your GCP HTTPS API URL here before deploying to Firebase (e.g. https://xyz.run.app/api/explain).
+
+      const SESSION_KEY = "research-explainer-session-id";
+
+      const chatMessages = document.getElementById("chat-messages");
+      const chatForm = document.getElementById("chat-form");
+      const chatInput = document.getElementById("chat-input");
+      const sendBtn = document.getElementById("send-btn");
+      const sendLabel = document.getElementById("send-label");
+      const sendSpinner = document.getElementById("send-spinner");
+      const typingIndicator = document.getElementById("typing-indicator");
+      const validationMsg = document.getElementById("validation-msg");
+      const newChatBtn = document.getElementById("new-chat-btn");
+      const pdfInput = document.getElementById("pdf-input");
+      const pdfRow = document.getElementById("pdf-row");
+      const pdfStatus = document.getElementById("pdf-status");
+      const pdfHelp = document.getElementById("pdf-help");
+      const lightbox = document.getElementById("lightbox");
+      const lightboxImg = document.getElementById("lightbox-img");
+      const lightboxClose = document.getElementById("lightbox-close");
+      const themeToggle = document.getElementById("theme-toggle");
+      const themeToggleLabel = document.getElementById("theme-toggle-label");
+
+      const THEME_KEY = "research-explainer-theme";
+
+      /** After the first successful assistant reply, PDF upload is frozen for this chat. */
+      var hasCompletedFirstTurn = false;
+
+      const mdClasses =
+        "prose-msg space-y-2 leading-relaxed text-stone-800 dark:text-stone-100 [&_a]:text-indigo-600 dark:[&_a]:text-indigo-400 [&_a]:underline [&_code]:rounded [&_code]:bg-stone-100 dark:[&_code]:bg-stone-900 [&_code]:px-1 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-stone-100 dark:[&_pre]:bg-stone-900 [&_pre]:p-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_blockquote]:border-l-4 [&_blockquote]:border-stone-300 dark:[&_blockquote]:border-stone-600 [&_blockquote]:pl-4 [&_blockquote]:italic";
+
+      function isDarkMode() {
+        return document.documentElement.classList.contains("dark");
+      }
+
+      function syncThemeToggleUi() {
+        var dark = isDarkMode();
+        themeToggle.setAttribute("aria-pressed", dark ? "true" : "false");
+        themeToggleLabel.textContent = dark ? "Light mode" : "Dark mode";
+      }
+
+      function applyStoredTheme() {
+        var pref = localStorage.getItem(THEME_KEY);
+        if (pref === "dark") {
+          document.documentElement.classList.add("dark");
+        } else if (pref === "light") {
+          document.documentElement.classList.remove("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
+        syncThemeToggleUi();
+      }
+
+      function toggleTheme() {
+        document.documentElement.classList.toggle("dark");
+        localStorage.setItem(THEME_KEY, isDarkMode() ? "dark" : "light");
+        syncThemeToggleUi();
+      }
+
+      applyStoredTheme();
+
+      themeToggle.addEventListener("click", toggleTheme);
+
+      function getSessionId() {
+        var id = sessionStorage.getItem(SESSION_KEY);
+        if (!id) {
+          id =
+            typeof crypto !== "undefined" && crypto.randomUUID
+              ? crypto.randomUUID()
+              : "sess-" + String(Date.now()) + "-" + String(Math.random()).slice(2, 10);
+          sessionStorage.setItem(SESSION_KEY, id);
+        }
+        return id;
+      }
+
+      function setPdfUiLocked(locked) {
+        pdfInput.disabled = locked;
+        pdfRow.classList.toggle("opacity-60", locked);
+        pdfHelp.textContent = locked
+          ? "This conversation already used its PDF slot. Start New chat to attach a different paper."
+          : "You can attach one PDF per conversation. After the first reply, this is locked for this chat.";
+        if (locked) {
+          pdfStatus.textContent = pdfInput.files && pdfInput.files[0] ? pdfInput.files[0].name + " (locked)" : "";
+        }
+      }
+
+      function startNewChat() {
+        sessionStorage.removeItem(SESSION_KEY);
+        hasCompletedFirstTurn = false;
+        pdfInput.value = "";
+        pdfStatus.textContent = "";
+        setPdfUiLocked(false);
+        chatMessages.innerHTML = "";
+        var empty = document.createElement("div");
+        empty.id = "chat-empty";
+        empty.className = "py-8 text-center text-sm text-stone-500 dark:text-stone-400";
+        empty.innerHTML =
+          'Upload a PDF (optional) and send your first message below. Press <kbd class="rounded bg-stone-200 px-1 dark:bg-stone-700">Enter</kbd> to send, <kbd class="rounded bg-stone-200 px-1 dark:bg-stone-700">Shift+Enter</kbd> for a new line.';
+        chatMessages.appendChild(empty);
+        chatInput.focus();
+      }
+
+      function scrollChatToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      function setLoading(isLoading) {
+        sendBtn.disabled = isLoading;
+        chatInput.disabled = isLoading;
+        pdfInput.disabled = isLoading || hasCompletedFirstTurn;
+        if (isLoading) {
+          sendSpinner.classList.remove("hidden");
+          sendLabel.textContent = "…";
+          typingIndicator.classList.remove("hidden");
+        } else {
+          sendSpinner.classList.add("hidden");
+          sendLabel.textContent = "Send";
+          typingIndicator.classList.add("hidden");
+        }
+        scrollChatToBottom();
+      }
+
+      function formatDetail(detail) {
+        if (detail == null) return "";
+        if (typeof detail === "string") return detail;
+        if (Array.isArray(detail)) {
+          return detail
+            .map(function (item) {
+              if (item && typeof item.msg === "string") return item.msg;
+              return JSON.stringify(item);
+            })
+            .join("; ");
+        }
+        return JSON.stringify(detail);
+      }
+
+      function appendUserBubble(text, options) {
+        options = options || {};
+        var emptyEl = document.getElementById("chat-empty");
+        if (emptyEl) emptyEl.remove();
+        var wrap = document.createElement("div");
+        wrap.className = "flex justify-end";
+        var bubble = document.createElement("div");
+        bubble.className =
+          "max-w-[85%] rounded-2xl rounded-br-md bg-indigo-600 px-4 py-2 text-sm text-white shadow-sm whitespace-pre-wrap dark:bg-indigo-700";
+        bubble.textContent = text;
+        if (options.includePdfNote) {
+          var note = document.createElement("div");
+          note.className = "mt-2 border-t border-indigo-400/50 pt-2 text-xs text-indigo-200";
+          note.textContent = "Includes uploaded PDF";
+          bubble.appendChild(note);
+        }
+        wrap.appendChild(bubble);
+        chatMessages.appendChild(wrap);
+        scrollChatToBottom();
+      }
+
+      function appendAssistantBubble(html, images) {
+        var wrap = document.createElement("div");
+        wrap.className = "flex justify-start";
+        var bubble = document.createElement("div");
+        bubble.className =
+          "max-w-[90%] rounded-2xl rounded-bl-md border border-stone-200 bg-stone-50 px-4 py-3 text-sm shadow-sm dark:border-stone-600 dark:bg-stone-800";
+
+        var textEl = document.createElement("div");
+        textEl.className = mdClasses;
+        textEl.innerHTML = html;
+        bubble.appendChild(textEl);
+
+        if (images && images.length > 0) {
+          var grid = document.createElement("div");
+          grid.className = "mt-3 grid gap-3 sm:grid-cols-2";
+          images.forEach(function (src, i) {
+            if (src == null || src === "") return;
+            var img = document.createElement("img");
+            img.src = src;
+            img.alt = "Diagram " + (i + 1);
+            img.className =
+              "diagram-img max-h-80 w-full cursor-zoom-in rounded-lg border border-stone-200 bg-white object-contain shadow-sm transition hover:ring-2 hover:ring-indigo-300 dark:border-stone-600 dark:bg-stone-900 dark:hover:ring-indigo-500";
+            img.loading = "lazy";
+            img.title = "Click to enlarge";
+            grid.appendChild(img);
+          });
+          bubble.appendChild(grid);
+        }
+
+        wrap.appendChild(bubble);
+        chatMessages.appendChild(wrap);
+        scrollChatToBottom();
+      }
+
+      function appendErrorBubble(plainMessage) {
+        var safe = String(plainMessage)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+        var wrap = document.createElement("div");
+        wrap.className = "flex justify-start";
+        var bubble = document.createElement("div");
+        bubble.className =
+          "max-w-[90%] rounded-2xl rounded-bl-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 shadow-sm dark:border-red-900 dark:bg-red-950/40 dark:text-red-300";
+        bubble.innerHTML = "<p>" + safe + "</p>";
+        wrap.appendChild(bubble);
+        chatMessages.appendChild(wrap);
+        scrollChatToBottom();
+      }
+
+      chatMessages.addEventListener("click", function (e) {
+        var t = e.target;
+        if (t && t.classList && t.classList.contains("diagram-img")) {
+          lightboxImg.src = t.src;
+          lightboxImg.alt = t.alt || "Diagram";
+          lightbox.classList.remove("hidden");
+          lightbox.classList.add("flex");
+        }
+      });
+
+      lightboxClose.addEventListener("click", function () {
+        lightbox.classList.add("hidden");
+        lightbox.classList.remove("flex");
+        lightboxImg.src = "";
+      });
+
+      lightbox.addEventListener("click", function (e) {
+        if (e.target === lightbox || e.target === lightboxImg) {
+          lightbox.classList.add("hidden");
+          lightbox.classList.remove("flex");
+          lightboxImg.src = "";
+        }
+      });
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !lightbox.classList.contains("hidden")) {
+          lightbox.classList.add("hidden");
+          lightbox.classList.remove("flex");
+          lightboxImg.src = "";
+        }
+      });
+
+      chatInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          if (!sendBtn.disabled) {
+            chatForm.requestSubmit();
+          }
+        }
+      });
+
+      pdfInput.addEventListener("change", function () {
+        if (hasCompletedFirstTurn) return;
+        pdfStatus.textContent =
+          pdfInput.files && pdfInput.files[0] ? "Selected: " + pdfInput.files[0].name : "";
+      });
+
+      newChatBtn.addEventListener("click", function () {
+        startNewChat();
+      });
+
+      chatForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        validationMsg.classList.add("hidden");
+        validationMsg.textContent = "";
+
+        const text = chatInput.value.trim();
+        var file = !hasCompletedFirstTurn && pdfInput.files && pdfInput.files[0] ? pdfInput.files[0] : null;
+
+        if (!text && !file) {
+          validationMsg.textContent = "Enter a message and/or attach a PDF.";
+          validationMsg.classList.remove("hidden");
+          return;
+        }
+
+        appendUserBubble(text || "(PDF only — no text)", { includePdfNote: !!file });
+        chatInput.value = "";
+
+        setLoading(true);
+
+        const sessionId = getSessionId();
+        var parseMd = typeof marked.parse === "function" ? marked.parse.bind(marked) : marked;
+
+        var fd = new FormData();
+        fd.append("session_id", sessionId);
+        fd.append("user_input", text);
+        if (file) {
+          fd.append("file", file, file.name);
+        }
+
+        try {
+          const response = await fetch(BACKEND_URL, {
+            method: "POST",
+            body: fd,
+          });
+
+          const rawBody = await response.text();
+          let data = null;
+          try {
+            data = rawBody ? JSON.parse(rawBody) : null;
+          } catch {
+            data = null;
+          }
+
+          if (!response.ok) {
+            let msg = "Request failed (" + response.status + " " + response.statusText + ").";
+            if (data && data.detail !== undefined) {
+              msg += " " + formatDetail(data.detail);
+            } else if (rawBody && !data) {
+              msg += " " + rawBody.slice(0, 200);
+            }
+            appendErrorBubble(msg);
+            return;
+          }
+
+          if (!data || typeof data !== "object") {
+            appendErrorBubble("Unexpected response from server.");
+            return;
+          }
+
+          const md = data.text != null ? String(data.text) : "";
+          const images = Array.isArray(data.images) ? data.images : [];
+          var mdToRender = md;
+          if (!mdToRender.trim() && images.length > 0) {
+            mdToRender =
+              "*The model returned diagrams but no explanation text. If this persists, check the API logs.*";
+          }
+          const html = parseMd(mdToRender, { breaks: true });
+          appendAssistantBubble(html, images);
+
+          if (!hasCompletedFirstTurn) {
+            hasCompletedFirstTurn = true;
+            setPdfUiLocked(true);
+          }
+        } catch (err) {
+          const message =
+            err && err.message
+              ? err.message
+              : "Network error. Check the backend URL, CORS, and that the API is running.";
+          appendErrorBubble(message);
+        } finally {
+          setLoading(false);
+          if (hasCompletedFirstTurn) {
+            setPdfUiLocked(true);
+          }
+          chatInput.focus();
+        }
+      });
+
+      getSessionId();
+    </script>
+  </body>
+</html>
