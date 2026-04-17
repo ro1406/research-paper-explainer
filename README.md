@@ -39,18 +39,24 @@ A specialized ADK based AI agent that analyzes research papers and provides deta
    GOOGLE_CLOUD_LOCATION=your-region
    ```
 
-### Running the Agent
+### Running locally
 
-The main way to use this agent is through the ADK web interface:
+The backend (FastAPI + ADK agent) and frontend (static HTML) are served separately — mirroring how they're deployed in production (Cloud Run + Firebase Hosting).
 
+**Terminal 1 — backend:**
 ```bash
-adk web
+fastapi dev main.py
 ```
+The API will be available at `http://localhost:8000`.
 
-1. Navigate to the web interface (`http://127.0.0.1:8000/dev-ui/?app=research_explainer`)
-2. Upload a PDF research paper
-3. Ask questions about specific concepts, methods, or findings
-4. Receive detailed explanations with visual aids
+**Terminal 2 — frontend:**
+```bash
+cd public
+python3 -m http.server 3000
+```
+Open `http://localhost:3000` in your browser.
+
+> The `BACKEND_URL` in `public/index.html` defaults to `http://localhost:8000/api/explain`, so no extra config is needed for local dev.
 
 ## How It Works
 
