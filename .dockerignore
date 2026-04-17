@@ -1,0 +1,12 @@
+.venv
+__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+.git
+.env
+.firebaserc
+firebase.json
+public/
+WORKSHOP.md
+README.md

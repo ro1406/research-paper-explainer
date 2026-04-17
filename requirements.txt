@@ -6,3 +6,4 @@ fastapi[standard]
 pydantic
 python-multipart
 uvicorn
+graphviz

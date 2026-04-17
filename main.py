@@ -37,7 +37,6 @@ from __future__ import annotations
 import base64
 import logging
 import os
-import time
 from typing import Any, Iterable
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
@@ -82,8 +81,6 @@ runner = Runner(
     agent=paper_agent,
     session_service=session_service,
     artifact_service=artifact_service,
-    # Session is created explicitly in `resolve_session` before each run.
-    auto_create_session=False,
 )
 
 

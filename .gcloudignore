@@ -1,0 +1,11 @@
+.gcloudignore
+.git
+.venv
+__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+.env
+public/
+WORKSHOP.md
+README.md
