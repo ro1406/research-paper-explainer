@@ -39,6 +39,10 @@ import logging
 import os
 from typing import Any, Iterable
 
+import dotenv
+
+dotenv.load_dotenv()
+
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from google.adk.artifacts import InMemoryArtifactService

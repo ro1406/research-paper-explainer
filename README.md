@@ -17,7 +17,8 @@ A specialized ADK based AI agent that analyzes research papers and provides deta
 ### Prerequisites
 
 - Python 3.8+
-- Google Cloud Project with Vertex AI enabled
+- Google Cloud Project with Vertex AI enabled OR
+- [Google AI Studio](https://aistudio.google.com/app/apikey) API key
 - ADK (Agent Development Kit) installed
 
 ### Installation
@@ -32,11 +33,15 @@ A specialized ADK based AI agent that analyzes research papers and provides deta
    ```bash
    cp env.example .env
    ```
-   Edit `.env` and add your Google Cloud configuration:
+   Edit `.env` and add your Google Cloud configuration / Google AI Studio API key:
    ```
    GOOGLE_GENAI_USE_VERTEXAI=TRUE
    GOOGLE_CLOUD_PROJECT=your-project-id
    GOOGLE_CLOUD_LOCATION=your-region
+   ```
+   OR
+   ```
+   GOOGLE_API_KEY=your-api-key
    ```
 
 ### Running locally
@@ -154,11 +159,16 @@ The agent will provide:
 
 1. **PDF Upload Fails**: Ensure the PDF is not password-protected and is readable
 2. **No Visuals Generated**: The agent may determine that a concept doesn't need visual aids
-3. **Environment Errors**: Verify your Google Cloud credentials and project configuration
+3. **Environment Errors**: Verify your Google Cloud credentials and project configuration / `GOOGLE_API_KEY` is set in `.env`
 
 ### Getting Help
 
 If you encounter issues:
+1. Check that `GOOGLE_API_KEY` is set in `.env`
+2. Ensure all dependencies are properly installed
+3. Check the console output for detailed error messages
+
+If using VertexAI:
 1. Check your Google Cloud project configuration
 2. Verify that Vertex AI is enabled in your project
 3. Ensure all dependencies are properly installed
@@ -179,4 +189,4 @@ Copyright © 2025
 
 ---
 
-**Note**: This agent requires a Google Cloud project with Vertex AI enabled and proper authentication configured.
+**Note**: This agent requires a Google Cloud project with Vertex AI enabled and proper authentication configured OR Google AI Studio API key (`GOOGLE_API_KEY` in `.env`).
