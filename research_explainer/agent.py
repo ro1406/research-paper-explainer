@@ -3,7 +3,7 @@ Author: Rohan Mitra (rohanmitra8@gmail.com)
 agent.py (c) 2025
 Desc: The Research Explainer ADK agent
 Created:  2025-09-05T18:00:00.000Z
-Modified: 2026-06-20T06:53:56.136Z
+Modified: 2026-06-20T08:37:19.052Z
 """
 
 from google.adk.agents import Agent
@@ -93,4 +93,17 @@ Remember: Your goal is to make complex research accessible while maintaining acc
 """
 
 
-
+root_agent = Agent(
+    name="research_explainer_agent",
+    model="gemini-2.5-flash",
+    description="""
+    A specialized agent for explaining concepts from research papers. 
+    Analyzes uploaded PDFs and provides detailed explanations with visual aids.
+    """,
+    instruction=BASE_PROMPT,
+    tools=[
+        generate_flowchart,
+        # generate_diagram,
+        find_research_context,
+    ],
+)
